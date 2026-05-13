@@ -1,0 +1,41 @@
+# cchist example config
+# Copy to ~/.config/cchist/config.toml (or use `cchist init`)
+
+storage = "~/cchist-archive"
+
+# Optional: explicit binary for `cchist analyze` / `cchist sync --analyze`
+# claude_bin = "claude"
+
+# ---- Local machine ----
+[[source]]
+name = "local"
+kind = "local"
+path = "~/.claude/projects"
+
+# ---- Remote VPS over SSH ----
+# Requires rsync on both ends and SSH access (uses ~/.ssh/config).
+[[source]]
+name = "vps"
+kind = "ssh"
+host = "my-vps"
+remote_path = "~/.claude/projects"
+
+# Optional: explicit user, otherwise resolved from ~/.ssh/config
+# user = "shogo"
+
+# Optional: extra rsync flags
+# rsync_args = ["--bwlimit=4M"]
+
+# ---- Another machine ----
+[[source]]
+name = "work-mac"
+kind = "ssh"
+host = "work-mac.tailscale-net.ts.net"
+remote_path = "~/.claude/projects"
+
+# ---- Claude.ai data export ZIP ----
+# Download from Settings > Privacy > Export data on claude.ai (web), then point here.
+[[source]]
+name = "claude-ai"
+kind = "zip"
+path = "~/Downloads/claude-export.zip"
