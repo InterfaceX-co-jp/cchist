@@ -29,6 +29,9 @@ program
   .description("pull conversation history from all configured sources")
   .option("--analyze", "after sync, spawn `claude -p` to summarize unfinished tasks")
   .option("--only <name...>", "sync only the named source(s)")
+  .option("--only-remote <name...>", "push only to the named remote(s)")
+  .option("--skip-remote", "skip pushing to configured [[remote]] targets")
+  .option("--remote-only", "skip source sync; only push existing archive to remotes")
   .option("--dry-run", "don't actually transfer; just print what would happen")
   .action(async (opts) => {
     process.exit(await runSync({ ...opts, config: program.opts().config }));

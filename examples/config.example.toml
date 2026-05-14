@@ -39,3 +39,33 @@ remote_path = "~/.claude/projects"
 name = "claude-ai"
 kind = "zip"
 path = "~/Downloads/claude-export.zip"
+
+# ============================================================================
+# BYO Cloud Storage (optional)
+# ============================================================================
+# After local sync completes, the archive is mirrored to each configured
+# [[remote]] via `aws s3 sync`. Requires the `aws` CLI on PATH.
+# Credentials are resolved through the standard AWS chain
+# (env vars, ~/.aws/credentials, IMDS, etc.) — cchist never reads secrets.
+#
+# ---- AWS S3 ----
+# [[remote]]
+# name = "s3-backup"
+# kind = "s3"
+# bucket = "my-cchist-archive"
+# prefix = "archive"             # optional key prefix inside the bucket
+# region = "us-east-1"
+# # profile = "personal"          # optional named profile from ~/.aws/credentials
+# # delete = true                  # default: true (mirror — remove orphaned keys)
+# # extra_args = ["--storage-class", "STANDARD_IA"]
+#
+# ---- Cloudflare R2 (S3-compatible) ----
+# Generate an R2 API token (Account → R2 → Manage API tokens) and export
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY before running `cchist sync`.
+# [[remote]]
+# name = "r2-backup"
+# kind = "s3"
+# bucket = "my-cchist-archive"
+# prefix = "archive"
+# region = "auto"                # R2 requires region="auto"
+# endpoint = "https://<ACCOUNT_ID>.r2.cloudflarestorage.com"
