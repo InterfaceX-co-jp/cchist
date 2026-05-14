@@ -1,0 +1,10 @@
+web/
+src/
+examples/
+node_modules/
+bun.lock
+tsconfig.json
+.github/
+.gitignore
+.npmignore
+*.log

@@ -76,6 +76,38 @@ path = "~/Downloads/claude-export.zip"
 | `ssh`   | SSH 経由のリモート | rsync, ssh, `~/.ssh/config` 設定済み |
 | `zip`   | Claude.ai のデータエクスポート ZIP | unzip |
 
+### BYO クラウドストレージ (任意)
+
+`[[remote]]` を追加するとローカル sync 完了後にアーカイブを S3 互換オブジェクトストレージへ自動ミラーします。`aws` CLI を裏で叩くだけなので、AWS S3 / Cloudflare R2 / MinIO / Backblaze B2 / Wasabi いずれも同じ設定で動きます。
+
+```toml
+# AWS S3
+[[remote]]
+name = "s3-backup"
+kind = "s3"
+bucket = "my-cchist-archive"
+prefix = "archive"
+region = "us-east-1"
+
+# Cloudflare R2 (S3 互換)
+[[remote]]
+name = "r2-backup"
+kind = "s3"
+bucket = "my-cchist-archive"
+prefix = "archive"
+region = "auto"
+endpoint = "https://<ACCOUNT_ID>.r2.cloudflarestorage.com"
+```
+
+認証は標準 AWS チェーン (環境変数 `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`、`~/.aws/credentials`、IMDS 等)。`cchist` 自身は秘密情報を読みません。R2 の場合は R2 API トークンを上記環境変数として export してください。
+
+| フラグ | 効果 |
+|--------|------|
+| `--skip-remote` | リモートプッシュをスキップ (ローカル sync のみ) |
+| `--remote-only` | ソース sync をスキップし、既存アーカイブをリモートに再 push |
+| `--only-remote <name...>` | 指定 remote だけに push |
+| `--dry-run` | `aws s3 sync --dryrun` を含めて何が転送されるか表示 |
+
 ---
 
 ## コマンド
@@ -127,11 +159,26 @@ bun run build  # → dist/cli.mjs
 
 ---
 
+## Web ビューワ (Railway 一発デプロイ)
+
+CLI で S3 / R2 に push したアーカイブを、ブラウザで閲覧する読取専用 Next.js アプリ。コードは [`web/`](./web/)。
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template?template=https://github.com/InterfaceX-co-jp/cchist/tree/main/web&referralCode=REPLACE_ME)
+
+- セルフホスト前提 (SaaS 提供なし) — 自分の Railway アカウントで動かす
+- DB 不要 — bucket をそのまま読む
+- HTTP Basic Auth で保護 (`BASIC_AUTH_USER` / `BASIC_AUTH_PASS`)
+- 必要な env vars は [`web/README.md`](./web/README.md) 参照
+
+> ボタンの `REPLACE_ME` を Railway の referral code に置換、かつ Railway dashboard で template として登録すると、ワンクリックで env var 入力フォームに遷移 → デプロイまで進む。
+
+---
+
 ## ロードマップ
 
 - [ ] `cchist watch`: hook 経由のリアルタイム同期
 - [ ] API ログ取り込み(SDK ラッパー or OpenTelemetry コレクタ)
-- [ ] Web UI (検索 / セッション差分 / タイムライン)
+- [x] Web UI (検索 / セッション差分 / タイムライン) — [`web/`](./web/)
 - [ ] 個別セッションを markdown にエクスポート
 - [ ] memory のエクスポート(claude.ai)取り込み
 
