@@ -118,13 +118,32 @@ cchist sync                  # 全ソースから同期
 cchist sync --only local vps # 特定ソースだけ
 cchist sync --dry-run        # 何をやるか確認
 cchist sync --analyze        # 同期 + claude -p で分析
+cchist sync --debounce 30    # 30秒以内に実行済みならスキップ
 cchist list                  # アーカイブ内のセッション一覧(新しい順)
 cchist list --source vps     # ソース絞り込み
 cchist list --json           # JSON 出力
 cchist search "ERC-4337"     # 横断 grep
 cchist analyze               # 同期せずに分析だけ実行
 cchist analyze --prompt "..." # プロンプト差し替え
+cchist install-hook          # Claude Code の Stop hook に cchist sync を登録
+cchist install-hook --debounce 60  # debounce 窓を 60 秒に変更
+cchist install-hook --dry-run      # 書き込まずに確認
 ```
+
+### 自動同期 (install-hook)
+
+`cchist install-hook` を一度実行すると、`~/.claude/settings.json` の `Stop` hook に
+`cchist sync --only local --debounce 30` が登録されます。
+Claude Code セッションが終了するたびにローカル履歴が自動同期されます。
+
+```bash
+cchist install-hook          # デフォルト設定で登録
+cchist install-hook --debounce 60   # debounce を 60 秒に変更して登録
+cchist install-hook --force  # 既存の cchist hook を置き換えて再登録
+```
+
+**注意:** SSH ソースは hook では同期されません (`--only local` 限定)。
+マルチマシン集約は引き続き `cchist sync` を手動実行してください。
 
 ---
 
@@ -176,7 +195,7 @@ CLI で S3 / R2 に push したアーカイブを、ブラウザで閲覧する�
 
 ## ロードマップ
 
-- [ ] `cchist watch`: hook 経由のリアルタイム同期
+- [x] `cchist install-hook`: hook 経由のリアルタイム同期 (`Stop` hook → `cchist sync --only local`)
 - [ ] API ログ取り込み(SDK ラッパー or OpenTelemetry コレクタ)
 - [x] Web UI (検索 / セッション差分 / タイムライン) — [`web/`](./web/)
 - [ ] 個別セッションを markdown にエクスポート
