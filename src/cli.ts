@@ -4,6 +4,7 @@ import { runSync } from "./commands/sync.js";
 import { runList } from "./commands/list.js";
 import { runSearch } from "./commands/search.js";
 import { runAnalyze } from "./commands/analyze.js";
+import { runInstallHook } from "./commands/install-hook.js";
 import { ConfigNotFoundError } from "./config.js";
 import { log } from "./log.js";
 
@@ -33,6 +34,7 @@ program
   .option("--skip-remote", "skip pushing to configured [[remote]] targets")
   .option("--remote-only", "skip source sync; only push existing archive to remotes")
   .option("--dry-run", "don't actually transfer; just print what would happen")
+  .option("--debounce <seconds>", "skip sync if it already ran within N seconds", (v) => parseInt(v, 10))
   .action(async (opts) => {
     process.exit(await runSync({ ...opts, config: program.opts().config }));
   });
@@ -61,6 +63,20 @@ program
   .option("--prompt <text>", "override the analyze prompt")
   .action(async (opts) => {
     process.exit(await runAnalyze({ ...opts, config: program.opts().config }));
+  });
+
+program
+  .command("install-hook")
+  .description("register a Stop hook in ~/.claude/settings.json to auto-sync on session end")
+  .option(
+    "--debounce <seconds>",
+    "skip sync if it already ran within N seconds (default: 30)",
+    (v) => parseInt(v, 10),
+  )
+  .option("--force", "replace any existing cchist hook entries")
+  .option("--dry-run", "show what would be written without modifying settings.json")
+  .action(async (opts) => {
+    process.exit(await runInstallHook(opts));
   });
 
 program.parseAsync(process.argv).catch((err) => {
