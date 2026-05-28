@@ -1,16 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { MiddlewareHandler } from "hono";
 
-export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|healthz).*)"],
+export type BasicAuthBindings = {
+  BASIC_AUTH_USER?: string;
+  BASIC_AUTH_PASS?: string;
 };
 
-export function middleware(req: NextRequest) {
-  const user = process.env.BASIC_AUTH_USER;
-  const pass = process.env.BASIC_AUTH_PASS;
+export const basicAuth: MiddlewareHandler<{
+  Bindings: BasicAuthBindings;
+}> = async (c, next) => {
+  const user = c.env.BASIC_AUTH_USER;
+  const pass = c.env.BASIC_AUTH_PASS;
 
-  if (!user || !pass) return NextResponse.next();
+  // No credentials configured → viewer is public.
+  if (!user || !pass) return next();
 
-  const header = req.headers.get("authorization");
+  const header = c.req.header("authorization");
   if (header?.startsWith("Basic ")) {
     const decoded = atob(header.slice(6));
     const idx = decoded.indexOf(":");
@@ -18,16 +22,16 @@ export function middleware(req: NextRequest) {
       const u = decoded.slice(0, idx);
       const p = decoded.slice(idx + 1);
       if (timingSafeEqual(u, user) && timingSafeEqual(p, pass)) {
-        return NextResponse.next();
+        return next();
       }
     }
   }
 
-  return new NextResponse("Authentication required", {
+  return new Response("Authentication required", {
     status: 401,
     headers: { "WWW-Authenticate": 'Basic realm="cchist"' },
   });
-}
+};
 
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;

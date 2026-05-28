@@ -178,18 +178,38 @@ bun run build  # → dist/cli.mjs
 
 ---
 
-## Web ビューワ (Railway 一発デプロイ)
+## Web ビューワ (Cloudflare Workers / Railway 両対応)
 
-CLI で S3 / R2 に push したアーカイブを、ブラウザで閲覧する読取専用 Next.js アプリ。コードは [`web/`](./web/)。
+CLI で R2 / S3 に push したアーカイブを、ブラウザで閲覧する読取専用アプリ。コードは [`web/`](./web/)。
+
+[Hono](https://hono.dev) + JSX SSR 単一コードベース → 2 経路でデプロイ可能:
+
+- **Cloudflare Workers** — R2 native binding 直結。認証情報を Worker 内に持たない。bundle gzip 188KB
+- **Railway / Node** — S3-compatible env vars 経由 (`@aws-sdk/client-s3` fallback)
+
+### Cloudflare Workers
+
+```bash
+cd web
+npm install
+npx wrangler r2 bucket create cchist
+npx wrangler secret put BASIC_AUTH_USER
+npx wrangler secret put BASIC_AUTH_PASS
+npm run deploy:cf
+```
+
+### Railway
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template?template=https://github.com/InterfaceX-co-jp/cchist/tree/main/web&referralCode=REPLACE_ME)
 
-- セルフホスト前提 (SaaS 提供なし) — 自分の Railway アカウントで動かす
-- DB 不要 — bucket をそのまま読む
-- HTTP Basic Auth で保護 (`BASIC_AUTH_USER` / `BASIC_AUTH_PASS`)
-- 必要な env vars は [`web/README.md`](./web/README.md) 参照
+共通仕様:
 
-> ボタンの `REPLACE_ME` を Railway の referral code に置換、かつ Railway dashboard で template として登録すると、ワンクリックで env var 入力フォームに遷移 → デプロイまで進む。
+- セルフホスト前提 (SaaS 提供なし)
+- DB 不要 — bucket をそのまま読む
+- HTTP Basic Auth で保護 (`BASIC_AUTH_USER` / `BASIC_AUTH_PASS`)。未設定なら public
+- 詳細 env vars / scripts / アーキテクチャは [`web/README.md`](./web/README.md) 参照
+
+> Railway ボタンの `REPLACE_ME` を referral code に置換、Railway dashboard で template 登録するとワンクリックで env var 入力フォーム → デプロイ。
 
 ---
 
@@ -197,7 +217,8 @@ CLI で S3 / R2 に push したアーカイブを、ブラウザで閲覧する�
 
 - [x] `cchist install-hook`: hook 経由のリアルタイム同期 (`Stop` hook → `cchist sync --only local`)
 - [ ] API ログ取り込み(SDK ラッパー or OpenTelemetry コレクタ)
-- [x] Web UI (検索 / セッション差分 / タイムライン) — [`web/`](./web/)
+- [x] Web UI — [`web/`](./web/) (Hono + JSX, Cloudflare Workers / Railway 両対応)
+- [ ] Web UI: 検索 / セッション差分 / タイムライン
 - [ ] 個別セッションを markdown にエクスポート
 - [ ] memory のエクスポート(claude.ai)取り込み
 
