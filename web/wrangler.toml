@@ -1,0 +1,24 @@
+name = "cchist-web"
+main = "src/index.tsx"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Static assets (Tailwind CSS, etc.)
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# Cloudflare R2 binding — preferred path (no credentials needed inside Workers)
+# Configure your bucket name via `wrangler r2 bucket create cchist` then set below.
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "cchist"
+
+# Optional path prefix inside the bucket
+# [vars]
+# STORAGE_PREFIX = ""
+
+# Basic auth — set via `wrangler secret put BASIC_AUTH_USER` / `BASIC_AUTH_PASS`
+# Or uncomment for non-secret testing:
+# [vars]
+# BASIC_AUTH_USER = "admin"

@@ -59,9 +59,8 @@ function stringifyContent(content: unknown): string {
       const name = typeof b.name === "string" ? b.name : "tool";
       parts.push(`\n[tool_use: ${name}]`);
     } else if (b.type === "tool_result") {
-      const result = typeof b.content === "string"
-        ? b.content
-        : JSON.stringify(b.content);
+      const result =
+        typeof b.content === "string" ? b.content : JSON.stringify(b.content);
       parts.push(`\n[tool_result]\n${truncate(result, 2000)}`);
     }
   }
